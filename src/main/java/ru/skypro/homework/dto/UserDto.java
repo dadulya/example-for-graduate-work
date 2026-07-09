@@ -6,19 +6,18 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Schema(description = "Данные для регистрации пользователя")
-public class Register {
+@Schema(description = "Данные пользователя")
+public class UserDto {
 
-    @Schema(description = "Email пользователя (логин)", example = "user@example.com")
-    private String username;
+    @Schema(description = "ID пользователя", example = "1")
+    private Integer id;
 
-    @Schema(description = "Пароль", example = "securePassword123")
-    private String password;
+    @Schema(description = "Email пользователя", example = "user@example.com")
+    private String email;
 
     @Schema(description = "Имя пользователя", example = "Иван")
     private String firstName;
@@ -30,5 +29,8 @@ public class Register {
     private String phone;
 
     @Schema(description = "Роль пользователя", example = "USER")
-    private Role role;
+    private String role;
+
+    @Schema(description = "Ссылка на аватар пользователя")
+    private String image;
 }

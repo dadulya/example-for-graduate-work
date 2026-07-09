@@ -11,14 +11,8 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Schema(description = "Данные для регистрации пользователя")
-public class Register {
-
-    @Schema(description = "Email пользователя (логин)", example = "user@example.com")
-    private String username;
-
-    @Schema(description = "Пароль", example = "securePassword123")
-    private String password;
+@Schema(description = "Данные для обновления профиля")
+public class UpdateUserDto {
 
     @Schema(description = "Имя пользователя", example = "Иван")
     private String firstName;
@@ -28,7 +22,4 @@ public class Register {
 
     @Schema(description = "Телефон пользователя", example = "+79161234567")
     private String phone;
-
-    @Schema(description = "Роль пользователя", example = "USER")
-    private Role role;
 }
