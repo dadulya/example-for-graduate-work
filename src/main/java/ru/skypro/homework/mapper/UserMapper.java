@@ -1,61 +1,52 @@
 package ru.skypro.homework.mapper;
 
-import org.springframework.stereotype.Component;
+import org.mapstruct.*;
 import ru.skypro.homework.dto.Register;
 import ru.skypro.homework.dto.UpdateUserDto;
 import ru.skypro.homework.dto.UserDto;
 import ru.skypro.homework.entity.ImageEntity;
 import ru.skypro.homework.entity.UserEntity;
 
-
-@Component
-public class UserMapper {
+import java.util.Optional;
 
 
-    public UserDto toDto(UserEntity entity) {
-        if (entity == null) {
-            return null;
-        }
-        return UserDto.builder()
-                .id(entity.getId())
-                .email(entity.getEmail())
-                .firstName(entity.getFirstName())
-                .lastName(entity.getLastName())
-                .phone(entity.getPhone())
-                .role(entity.getRole())
-                .image(getImageUrl(entity.getImage()))
-                .build();
+@Mapper(componentModel = "spring")
+public interface UserMapper {
+
+
+    @Mapping(target = "image", source = "image", qualifiedByName = "imageToUrl")
+    @Mapping(target = "id", source = "id")
+    UserDto toDto(UserEntity entity);
+
+
+    default Optional<UserDto> toDtoOptional(UserEntity entity) {
+        return Optional.ofNullable(entity).map(this::toDto);
     }
 
 
-    public UserEntity toEntity(Register dto) {
-        if (dto == null) {
-            return null;
-        }
-        return UserEntity.builder()
-                .email(dto.getUsername())
-                .password(dto.getPassword())
-                .firstName(dto.getFirstName())
-                .lastName(dto.getLastName())
-                .phone(dto.getPhone())
-                .role(dto.getRole() != null ? dto.getRole().name() : "USER")
-                .build();
-    }
-
-    public void updateEntity(UserEntity entity, UpdateUserDto dto) {
-        if (entity == null || dto == null) {
-            return;
-        }
-        entity.setFirstName(dto.getFirstName());
-        entity.setLastName(dto.getLastName());
-        entity.setPhone(dto.getPhone());
-    }
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "image", ignore = true)
+    @Mapping(target = "ads", ignore = true)
+    @Mapping(target = "comments", ignore = true)
+    @Mapping(target = "role", expression = "java(dto.getRole() != null ? dto.getRole().name() : \"USER\")")
+    @Mapping(target = "email", source = "username")
+    UserEntity toEntity(Register dto);
 
 
-    private String getImageUrl(ImageEntity image) {
-        if (image == null) {
-            return null;
-        }
-        return "/images/" + image.getId();
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "email", ignore = true)
+    @Mapping(target = "password", ignore = true)
+    @Mapping(target = "role", ignore = true)
+    @Mapping(target = "image", ignore = true)
+    @Mapping(target = "ads", ignore = true)
+    @Mapping(target = "comments", ignore = true)
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    void updateEntity(@MappingTarget UserEntity entity, UpdateUserDto dto);
+
+    @Named("imageToUrl")
+    default String imageToUrl(ImageEntity image) {
+        return Optional.ofNullable(image)
+                .map(img -> "/images/" + img.getId())
+                .orElse(null);
     }
 }

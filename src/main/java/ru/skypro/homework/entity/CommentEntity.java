@@ -3,6 +3,8 @@ package ru.skypro.homework.entity;
 import lombok.*;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
+
 
 @Entity
 @Table(name = "comments")
@@ -32,5 +34,5 @@ public class CommentEntity {
     private UserEntity author;
 
     @Column(name = "created_at", nullable = false)
-    private Long createdAt;
+    private LocalDateTime createdAt;
 }

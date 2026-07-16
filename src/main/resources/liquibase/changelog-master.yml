@@ -7,3 +7,5 @@ databaseChangeLog:
       file: liquibase/scripts/create-comments-table.sql
   - include:
       file: liquibase/scripts/create-images-table.sql
+  - include:
+      file: liquibase/scripts/alter-comments-created-at.sql

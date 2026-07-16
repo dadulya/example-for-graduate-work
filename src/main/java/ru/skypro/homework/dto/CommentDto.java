@@ -23,7 +23,7 @@ public class CommentDto {
     @Schema(description = "Имя автора", example = "Иван")
     private String authorFirstName;
 
-    @Schema(description = "Дата и время создания (timestamp)", example = "1693500000000")
+    @Schema(description = "Дата и время создания (timestamp в миллисекундах)", example = "1693500000000")
     private Long createdAt;
 
     @Schema(description = "ID комментария", example = "1")
