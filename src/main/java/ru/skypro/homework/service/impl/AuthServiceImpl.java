@@ -2,12 +2,12 @@ package ru.skypro.homework.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import ru.skypro.homework.dto.Register;
 import ru.skypro.homework.entity.UserEntity;
 import ru.skypro.homework.repository.UserRepository;
 import ru.skypro.homework.service.AuthService;
-
 
 @Slf4j
 @Service
@@ -15,11 +15,12 @@ import ru.skypro.homework.service.AuthService;
 public class AuthServiceImpl implements AuthService {
 
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public boolean login(String userName, String password) {
         return userRepository.findByEmailIgnoreCase(userName)
-                .map(user -> user.getPassword().equals(password))
+                .map(user -> passwordEncoder.matches(password, user.getPassword()))
                 .orElse(false);
     }
 
@@ -32,7 +33,7 @@ public class AuthServiceImpl implements AuthService {
 
         UserEntity user = UserEntity.builder()
                 .email(register.getUsername())
-                .password(register.getPassword())
+                .password(passwordEncoder.encode(register.getPassword()))
                 .firstName(register.getFirstName())
                 .lastName(register.getLastName())
                 .phone(register.getPhone())

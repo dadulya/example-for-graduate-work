@@ -2,6 +2,7 @@ package ru.skypro.homework.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.skypro.homework.dto.NewPasswordDto;
@@ -24,21 +25,20 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final UserMapper userMapper;
-
+    private final PasswordEncoder passwordEncoder;
 
     public UserDto register(Register register) {
         UserEntity entity = userMapper.toEntity(register);
+        entity.setPassword(passwordEncoder.encode(entity.getPassword()));
         entity = userRepository.save(entity);
         log.info("Зарегистрирован новый пользователь: {}", entity.getEmail());
         return userMapper.toDto(entity);
     }
 
-
     @Transactional(readOnly = true)
     public Optional<UserEntity> findByEmail(String email) {
         return userRepository.findByEmailIgnoreCase(email);
     }
-
 
     @Transactional(readOnly = true)
     public UserDto getUserProfile(String email) {
@@ -46,7 +46,6 @@ public class UserService {
                 .orElseThrow(() -> new EntityNotFoundException("Пользователь не найден: " + email));
         return userMapper.toDto(entity);
     }
-
 
     public UserDto updateUser(String email, UpdateUserDto updateUserDto) {
         UserEntity entity = userRepository.findByEmailIgnoreCase(email)
@@ -57,14 +56,15 @@ public class UserService {
         return userMapper.toDto(entity);
     }
 
-
     public void changePassword(String email, NewPasswordDto newPasswordDto) {
         UserEntity entity = userRepository.findByEmailIgnoreCase(email)
                 .orElseThrow(() -> new EntityNotFoundException("Пользователь не найден: " + email));
-        if (!entity.getPassword().equals(newPasswordDto.getCurrentPassword())) {
+
+        if (!passwordEncoder.matches(newPasswordDto.getCurrentPassword(), entity.getPassword())) {
             throw new IllegalArgumentException("Неверный текущий пароль");
         }
-        entity.setPassword(newPasswordDto.getNewPassword());
+
+        entity.setPassword(passwordEncoder.encode(newPasswordDto.getNewPassword()));
         userRepository.save(entity);
         log.info("Пароль изменён для пользователя: {}", email);
     }

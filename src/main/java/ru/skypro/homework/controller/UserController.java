@@ -1,19 +1,19 @@
 package ru.skypro.homework.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import ru.skypro.homework.dto.NewPasswordDto;
 import ru.skypro.homework.dto.UpdateUserDto;
 import ru.skypro.homework.dto.UserDto;
+import ru.skypro.homework.service.UserService;
 
 
 @Slf4j
@@ -24,42 +24,38 @@ import ru.skypro.homework.dto.UserDto;
 @Tag(name = "Пользователи", description = "API для управления профилем пользователя")
 public class UserController {
 
-    @Operation(summary = "Получить профиль текущего пользователя")
-    @ApiResponse(responseCode = "200", description = "OK",
-            content = @Content(schema = @Schema(implementation = UserDto.class)))
-    @ApiResponse(responseCode = "401", description = "Unauthorized")
+    private final UserService userService;
+
     @GetMapping("/me")
-    public ResponseEntity<UserDto> getUser() {
-        log.info("Вызван метод getUser");
-        return ResponseEntity.ok(new UserDto());
+    @Operation(summary = "Получить профиль текущего пользователя")
+    public ResponseEntity<UserDto> getUser(Authentication authentication) {
+        log.info("GET /users/me — пользователь: {}", authentication.getName());
+        return ResponseEntity.ok(userService.getUserProfile(authentication.getName()));
     }
 
-    @Operation(summary = "Обновить профиль текущего пользователя")
-    @ApiResponse(responseCode = "200", description = "OK",
-            content = @Content(schema = @Schema(implementation = UserDto.class)))
-    @ApiResponse(responseCode = "401", description = "Unauthorized")
     @PatchMapping("/me")
-    public ResponseEntity<UserDto> updateUser(@RequestBody UpdateUserDto updateUserDto) {
-        log.info("Вызван метод updateUser");
-        return ResponseEntity.ok(new UserDto());
+    @Operation(summary = "Обновить профиль текущего пользователя")
+    public ResponseEntity<UserDto> updateUser(@RequestBody UpdateUserDto updateUserDto,
+                                              Authentication authentication) {
+        log.info("PATCH /users/me — пользователь: {}", authentication.getName());
+        return ResponseEntity.ok(userService.updateUser(authentication.getName(), updateUserDto));
     }
 
-    @Operation(summary = "Сменить пароль текущего пользователя")
-    @ApiResponse(responseCode = "200", description = "OK")
-    @ApiResponse(responseCode = "401", description = "Unauthorized")
-    @ApiResponse(responseCode = "403", description = "Forbidden")
     @PostMapping("/set_password")
-    public ResponseEntity<Void> setPassword(@RequestBody NewPasswordDto newPasswordDto) {
-        log.info("Вызван метод setPassword");
+    @Operation(summary = "Сменить пароль текущего пользователя")
+    public ResponseEntity<Void> setPassword(@RequestBody NewPasswordDto newPasswordDto,
+                                            Authentication authentication) {
+        log.info("POST /users/set_password — пользователь: {}", authentication.getName());
+        userService.changePassword(authentication.getName(), newPasswordDto);
         return ResponseEntity.ok().build();
     }
 
-    @Operation(summary = "Обновить аватар пользователя")
-    @ApiResponse(responseCode = "200", description = "OK")
-    @ApiResponse(responseCode = "401", description = "Unauthorized")
     @PatchMapping(value = "/me/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<Void> updateUserImage(@RequestPart("image") MultipartFile image) {
-        log.info("Вызван метод updateUserImage с файлом: {}", image.getOriginalFilename());
+    @Operation(summary = "Обновить аватар пользователя")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    public ResponseEntity<Void> updateUserImage(@RequestPart("image") MultipartFile image,
+                                                Authentication authentication) {
+        log.info("PATCH /users/me/image — файл: {}", image.getOriginalFilename());
         return ResponseEntity.ok().build();
     }
 }
