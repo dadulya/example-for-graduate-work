@@ -14,6 +14,7 @@ import ru.skypro.homework.dto.ResponseWrapper;
 import ru.skypro.homework.security.MyUserDetails;
 import ru.skypro.homework.service.CommentService;
 
+
 @Slf4j
 @RestController
 @RequiredArgsConstructor
@@ -43,11 +44,8 @@ public class CommentController {
     @DeleteMapping("/ads/{adId}/comments/{commentId}")
     @Operation(summary = "Удалить комментарий")
     public ResponseEntity<Void> deleteComment(@PathVariable Integer adId,
-                                              @PathVariable Integer commentId,
-                                              Authentication authentication) {
-        boolean isAdmin = authentication.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-        commentService.deleteComment(adId, commentId, authentication.getName(), isAdmin);
+                                              @PathVariable Integer commentId) {
+        commentService.deleteComment(adId, commentId);
         return ResponseEntity.ok().build();
     }
 
@@ -55,11 +53,7 @@ public class CommentController {
     @Operation(summary = "Обновить комментарий")
     public ResponseEntity<CommentDto> updateComment(@PathVariable Integer adId,
                                                     @PathVariable Integer commentId,
-                                                    @RequestBody CreateOrUpdateCommentDto commentDto,
-                                                    Authentication authentication) {
-        boolean isAdmin = authentication.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-        return ResponseEntity.ok(commentService.updateComment(adId, commentId, commentDto,
-                authentication.getName(), isAdmin));
+                                                    @RequestBody CreateOrUpdateCommentDto commentDto) {
+        return ResponseEntity.ok(commentService.updateComment(adId, commentId, commentDto));
     }
 }

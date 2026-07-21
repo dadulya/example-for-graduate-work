@@ -10,20 +10,27 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import javax.persistence.EntityNotFoundException;
 
+
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(BadCredentialsException.class)
-    public ResponseEntity<Void> handleBadCredentials(BadCredentialsException e) {
-        log.warn("Ошибка авторизации: {}", e.getMessage());
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    @ExceptionHandler(ForbiddenException.class)
+    public ResponseEntity<Void> handleForbidden(ForbiddenException e) {
+        log.warn("Доступ запрещён: {}", e.getMessage());
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
 
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<Void> handleAccessDenied(AccessDeniedException e) {
         log.warn("Доступ запрещён: {}", e.getMessage());
         return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+    }
+
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<Void> handleBadCredentials(BadCredentialsException e) {
+        log.warn("Ошибка авторизации: {}", e.getMessage());
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
 
     @ExceptionHandler(EntityNotFoundException.class)

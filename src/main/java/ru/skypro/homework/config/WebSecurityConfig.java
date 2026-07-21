@@ -33,7 +33,13 @@ public class WebSecurityConfig {
                 .authorizeHttpRequests(authorization -> authorization
                         .mvcMatchers(AUTH_WHITELIST).permitAll()
                         .mvcMatchers(HttpMethod.GET, "/ads", "/ads/*", "/ads/*/comments").permitAll()
-                        .mvcMatchers("/ads/**", "/users/**").authenticated()
+                        .mvcMatchers(HttpMethod.POST, "/ads").hasAnyRole("USER", "ADMIN")
+                        .mvcMatchers(HttpMethod.PATCH, "/ads/**").hasAnyRole("USER", "ADMIN")
+                        .mvcMatchers(HttpMethod.DELETE, "/ads/**").hasAnyRole("USER", "ADMIN")
+                        .mvcMatchers(HttpMethod.POST, "/ads/*/comments").hasAnyRole("USER", "ADMIN")
+                        .mvcMatchers(HttpMethod.PATCH, "/ads/*/comments/**").hasAnyRole("USER", "ADMIN")
+                        .mvcMatchers(HttpMethod.DELETE, "/ads/*/comments/**").hasAnyRole("USER", "ADMIN")
+                        .mvcMatchers("/users/**").authenticated()
                 )
                 .cors().and()
                 .httpBasic(withDefaults());

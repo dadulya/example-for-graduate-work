@@ -7,13 +7,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import ru.skypro.homework.dto.*;
 import ru.skypro.homework.security.MyUserDetails;
 import ru.skypro.homework.service.AdService;
+
 
 @Slf4j
 @RestController
@@ -50,25 +50,20 @@ public class AdController {
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Удалить объявление по ID")
-    public ResponseEntity<Void> removeAd(@PathVariable Integer id, Authentication authentication) {
-        boolean isAdmin = authentication.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-        adService.deleteAd(id, authentication.getName(), isAdmin);
+    public ResponseEntity<Void> removeAd(@PathVariable Integer id) {
+        adService.deleteAd(id);
         return ResponseEntity.noContent().build();
     }
 
     @PatchMapping("/{id}")
     @Operation(summary = "Обновить объявление по ID")
     public ResponseEntity<AdDto> updateAd(@PathVariable Integer id,
-                                          @RequestBody CreateOrUpdateAdDto updateAdDto,
-                                          Authentication authentication) {
-        boolean isAdmin = authentication.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-        return ResponseEntity.ok(adService.updateAd(id, updateAdDto, authentication.getName(), isAdmin));
+                                          @RequestBody CreateOrUpdateAdDto updateAdDto) {
+        return ResponseEntity.ok(adService.updateAd(id, updateAdDto));
     }
 
     @GetMapping("/me")
-    @Operation(summary = "Получить все объявления авторизованного пользователя")
+    @Operation(summary = "Получить объявления авторизованного пользователя")
     public ResponseEntity<ResponseWrapper<AdDto>> getAdsMe(Authentication authentication) {
         var ads = adService.getMyAds(authentication.getName());
         return ResponseEntity.ok(new ResponseWrapper<>(ads.size(), ads));
