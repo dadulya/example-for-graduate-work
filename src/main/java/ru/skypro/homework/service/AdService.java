@@ -6,10 +6,12 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 import ru.skypro.homework.dto.AdDto;
 import ru.skypro.homework.dto.CreateOrUpdateAdDto;
 import ru.skypro.homework.dto.ExtendedAdDto;
 import ru.skypro.homework.entity.AdEntity;
+import ru.skypro.homework.entity.ImageEntity;
 import ru.skypro.homework.entity.UserEntity;
 import ru.skypro.homework.exception.ForbiddenException;
 import ru.skypro.homework.mapper.AdMapper;
@@ -17,6 +19,7 @@ import ru.skypro.homework.repository.AdRepository;
 
 import javax.persistence.EntityNotFoundException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -28,7 +31,7 @@ public class AdService {
 
     private final AdRepository adRepository;
     private final AdMapper adMapper;
-
+    private final ImageService imageService;
 
     @Transactional(readOnly = true)
     public List<AdDto> getAllAds() {
@@ -97,5 +100,33 @@ public class AdService {
 
         adRepository.delete(entity);
         log.info("Удалено объявление с id {} пользователем {}", id, currentEmail);
+    }
+
+    public void updateAdImage(Integer id, MultipartFile image) {
+        AdEntity entity = adRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Объявление с id " + id + " не найдено"));
+
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String currentEmail = auth.getName();
+        boolean isAdmin = auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+
+        if (!isAdmin && !entity.getAuthor().getEmail().equalsIgnoreCase(currentEmail)) {
+            throw new ForbiddenException("Нет прав на изменение картинки чужого объявления");
+        }
+
+
+        if (entity.getImages() != null) {
+            for (ImageEntity oldImage : new ArrayList<>(entity.getImages())) {
+                imageService.deleteImage(oldImage);
+            }
+            entity.getImages().clear();
+        }
+
+        ImageEntity newImage = imageService.saveAdImage(image, entity);
+        entity.getImages().add(newImage);
+        adRepository.save(entity);
+        log.info("Обновлена картинка объявления {}", id);
     }
 }

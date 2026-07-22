@@ -52,10 +52,10 @@ public class UserController {
 
     @PatchMapping(value = "/me/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "Обновить аватар пользователя")
-    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<Void> updateUserImage(@RequestPart("image") MultipartFile image,
                                                 Authentication authentication) {
         log.info("PATCH /users/me/image — файл: {}", image.getOriginalFilename());
+        userService.updateUserAvatar(authentication.getName(), image);
         return ResponseEntity.ok().build();
     }
 }

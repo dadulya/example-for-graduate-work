@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 import ru.skypro.homework.dto.NewPasswordDto;
 import ru.skypro.homework.dto.Register;
 import ru.skypro.homework.dto.UpdateUserDto;
@@ -26,6 +27,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
+    private final ImageService imageService;
 
     public UserDto register(Register register) {
         UserEntity entity = userMapper.toEntity(register);
@@ -67,5 +69,14 @@ public class UserService {
         entity.setPassword(passwordEncoder.encode(newPasswordDto.getNewPassword()));
         userRepository.save(entity);
         log.info("Пароль изменён для пользователя: {}", email);
+    }
+
+    public void updateUserAvatar(String email, MultipartFile image) {
+        UserEntity entity = userRepository.findByEmailIgnoreCase(email)
+                .orElseThrow(() -> new EntityNotFoundException("Пользователь не найден: " + email));
+
+        imageService.saveUserAvatar(image, entity);
+        userRepository.save(entity);
+        log.info("Обновлён аватар пользователя: {}", email);
     }
 }

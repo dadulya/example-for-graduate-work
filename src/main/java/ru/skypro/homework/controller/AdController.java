@@ -73,6 +73,8 @@ public class AdController {
     @Operation(summary = "Обновить картинку объявления")
     public ResponseEntity<Void> updateAdImage(@PathVariable Integer id,
                                               @RequestPart("image") MultipartFile image) {
+        adService.updateAdImage(id, image);
         return ResponseEntity.ok().build();
     }
+
 }
