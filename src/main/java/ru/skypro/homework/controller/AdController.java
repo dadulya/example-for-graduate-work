@@ -37,8 +37,9 @@ public class AdController {
     public ResponseEntity<AdDto> addAd(@RequestPart("properties") CreateOrUpdateAdDto properties,
                                        @RequestPart("image") MultipartFile image,
                                        Authentication authentication) {
+        log.info("POST /ads — создание объявления: {}", properties.getTitle());
         MyUserDetails userDetails = (MyUserDetails) authentication.getPrincipal();
-        AdDto created = adService.createAd(properties, userDetails.getUserEntity());
+        AdDto created = adService.createAd(properties, image, userDetails.getUserEntity());
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
@@ -73,8 +74,8 @@ public class AdController {
     @Operation(summary = "Обновить картинку объявления")
     public ResponseEntity<Void> updateAdImage(@PathVariable Integer id,
                                               @RequestPart("image") MultipartFile image) {
+        log.info("PATCH /ads/{}/image", id);
         adService.updateAdImage(id, image);
         return ResponseEntity.ok().build();
     }
-
 }

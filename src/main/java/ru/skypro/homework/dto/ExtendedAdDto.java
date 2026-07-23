@@ -6,8 +6,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
 
 @Data
 @Builder
@@ -31,8 +29,8 @@ public class ExtendedAdDto {
     @Schema(description = "Email автора", example = "user@example.com")
     private String email;
 
-    @Schema(description = "Ссылки на картинки объявления")
-    private List<String> image;
+    @Schema(description = "Ссылка на картинку объявления", example = "/images/abc123.jpg")
+    private String image;
 
     @Schema(description = "Телефон автора", example = "+79161234567")
     private String phone;

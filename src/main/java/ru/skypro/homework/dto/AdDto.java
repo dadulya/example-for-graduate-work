@@ -6,8 +6,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
 
 @Data
 @Builder
@@ -19,8 +17,8 @@ public class AdDto {
     @Schema(description = "ID автора объявления", example = "1")
     private Integer author;
 
-    @Schema(description = "Ссылки на картинки объявления")
-    private List<String> image;
+    @Schema(description = "Ссылка на картинку объявления", example = "/images/abc123.jpg")
+    private String image;
 
     @Schema(description = "ID объявления", example = "1")
     private Integer pk;

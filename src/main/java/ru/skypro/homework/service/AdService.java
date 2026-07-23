@@ -33,6 +33,7 @@ public class AdService {
     private final AdMapper adMapper;
     private final ImageService imageService;
 
+
     @Transactional(readOnly = true)
     public List<AdDto> getAllAds() {
         List<AdEntity> ads = adRepository.findAllByOrderByCreatedAtDesc();
@@ -55,12 +56,22 @@ public class AdService {
     }
 
 
-    public AdDto createAd(CreateOrUpdateAdDto dto, UserEntity author) {
+    public AdDto createAd(CreateOrUpdateAdDto dto, MultipartFile image, UserEntity author) {
         AdEntity entity = adMapper.toEntity(dto);
         entity.setAuthor(author);
         entity.setCreatedAt(LocalDateTime.now());
         entity = adRepository.save(entity);
-        log.info("Создано объявление с id {} пользователем {}", entity.getId(), author.getEmail());
+
+
+        if (image != null && !image.isEmpty()) {
+            ImageEntity savedImage = imageService.saveAdImage(image, entity);
+            entity.getImages().add(savedImage);
+            entity = adRepository.save(entity);
+            log.info("Создано объявление с id {} (с картинкой) пользователем {}", entity.getId(), author.getEmail());
+        } else {
+            log.info("Создано объявление с id {} (без картинки) пользователем {}", entity.getId(), author.getEmail());
+        }
+
         return adMapper.toAdDto(entity);
     }
 
@@ -84,10 +95,10 @@ public class AdService {
         return adMapper.toAdDto(entity);
     }
 
+
     public void deleteAd(Integer id) {
         AdEntity entity = adRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Объявление с id " + id + " не найдено"));
-
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String currentEmail = auth.getName();
@@ -102,10 +113,10 @@ public class AdService {
         log.info("Удалено объявление с id {} пользователем {}", id, currentEmail);
     }
 
+
     public void updateAdImage(Integer id, MultipartFile image) {
         AdEntity entity = adRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Объявление с id " + id + " не найдено"));
-
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String currentEmail = auth.getName();
@@ -123,6 +134,7 @@ public class AdService {
             }
             entity.getImages().clear();
         }
+
 
         ImageEntity newImage = imageService.saveAdImage(image, entity);
         entity.getImages().add(newImage);

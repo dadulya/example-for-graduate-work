@@ -7,8 +7,6 @@ import ru.skypro.homework.dto.ExtendedAdDto;
 import ru.skypro.homework.entity.AdEntity;
 import ru.skypro.homework.entity.ImageEntity;
 
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -18,18 +16,21 @@ import java.util.stream.Collectors;
 @Mapper(componentModel = "spring")
 public interface AdMapper {
 
+
     @Mapping(target = "author", source = "author.id")
-    @Mapping(target = "image", source = "images", qualifiedByName = "imagesToUrls")
+    @Mapping(target = "image", source = "images", qualifiedByName = "firstImageToUrl")
     @Mapping(target = "pk", source = "id")
     AdDto toAdDto(AdEntity entity);
+
 
     @Mapping(target = "pk", source = "id")
     @Mapping(target = "authorFirstName", source = "author.firstName")
     @Mapping(target = "authorLastName", source = "author.lastName")
     @Mapping(target = "email", source = "author.email")
     @Mapping(target = "phone", source = "author.phone")
-    @Mapping(target = "image", source = "images", qualifiedByName = "imagesToUrls")
+    @Mapping(target = "image", source = "images", qualifiedByName = "firstImageToUrl")
     ExtendedAdDto toExtendedAdDto(AdEntity entity);
+
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "author", ignore = true)
@@ -37,6 +38,7 @@ public interface AdMapper {
     @Mapping(target = "comments", ignore = true)
     @Mapping(target = "images", ignore = true)
     AdEntity toEntity(CreateOrUpdateAdDto dto);
+
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "author", ignore = true)
@@ -46,6 +48,7 @@ public interface AdMapper {
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     void updateEntity(@MappingTarget AdEntity entity, CreateOrUpdateAdDto dto);
 
+
     default List<AdDto> toAdDtoList(List<AdEntity> entities) {
         return Optional.ofNullable(entities)
                 .orElse(Collections.emptyList())
@@ -54,12 +57,12 @@ public interface AdMapper {
                 .collect(Collectors.toList());
     }
 
-    @Named("imagesToUrls")
-    default List<String> imagesToUrls(List<ImageEntity> images) {
-        return Optional.ofNullable(images)
-                .orElse(Collections.emptyList())
-                .stream()
-                .map(img -> "/images/" + img.getId())
-                .collect(Collectors.toList());
+
+    @Named("firstImageToUrl")
+    default String firstImageToUrl(List<ImageEntity> images) {
+        if (images == null || images.isEmpty()) {
+            return null;
+        }
+        return "/images/" + images.get(0).getId();
     }
 }
